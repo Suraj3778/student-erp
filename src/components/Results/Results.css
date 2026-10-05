@@ -1,0 +1,40 @@
+.results-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.results-page-header,
+.results-card-header {
+  margin-bottom: 0;
+}
+
+.results-summary {
+  margin-bottom: 0;
+}
+
+.result-semester-badge,
+.timetable-semester,
+.fees-status-badge {
+  padding: 9px 13px;
+  border-radius: 999px;
+  background: #f0edff;
+  color: #5b4be8;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.results-performance {
+  align-items: center;
+  border-color: #f2e6bd;
+  background: #fffbeb;
+}
+
+.results-performance-icon {
+  font-size: 24px;
+}
+
+.results-performance h3 {
+  font-size: 13px;
+}

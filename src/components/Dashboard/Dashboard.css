@@ -1,0 +1,246 @@
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.dashboard-header {
+  margin-bottom: 0;
+}
+
+.dashboard-greeting {
+  margin-bottom: 4px;
+  color: #7b8495;
+  font-size: 13px;
+}
+
+.dashboard-header h1 {
+  font-size: 25px;
+}
+
+.dashboard-student-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  padding: 10px 14px;
+  border: 1px solid #e9edf4;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.dashboard-student-info strong {
+  color: #4f46e5;
+  font-size: 12px;
+}
+
+.dashboard-student-info span {
+  color: #7b8495;
+  font-size: 11px;
+}
+
+.dashboard-stats {
+  margin-bottom: 0;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.dashboard-course-list,
+.dashboard-assignment-list,
+.dashboard-attendance-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-course-item,
+.dashboard-assignment-item,
+.dashboard-attendance-item {
+  padding: 13px 0;
+  border-bottom: 1px solid #eff1f5;
+}
+
+.dashboard-course-item:last-child,
+.dashboard-assignment-item:last-child,
+.dashboard-attendance-item:last-child {
+  border-bottom: 0;
+}
+
+.dashboard-course-info,
+.dashboard-attendance-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+
+.dashboard-course-info > div,
+.dashboard-assignment-info,
+.dashboard-attendance-info {
+  min-width: 0;
+}
+
+.dashboard-course-info strong,
+.dashboard-course-info span,
+.dashboard-assignment-info strong,
+.dashboard-assignment-info span,
+.dashboard-attendance-info strong,
+.dashboard-attendance-info span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-course-info strong,
+.dashboard-assignment-info strong,
+.dashboard-attendance-info strong {
+  color: #344054;
+  font-size: 12px;
+}
+
+.dashboard-course-info span,
+.dashboard-assignment-info span,
+.dashboard-attendance-info span {
+  margin-top: 4px;
+  color: #8992a3;
+  font-size: 10px;
+}
+
+.dashboard-course-info b {
+  color: #4f46e5;
+  font-size: 11px;
+}
+
+.dashboard-assignment-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.dashboard-assignment-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #fff4e5;
+  font-size: 15px;
+}
+
+.dashboard-assignment-info {
+  flex: 1;
+}
+
+.dashboard-assignment-date {
+  color: #667085;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.dashboard-attendance-card {
+  width: 100%;
+}
+
+.dashboard-attendance-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.dashboard-attendance-info {
+  min-width: 140px;
+  margin: 0;
+}
+
+.dashboard-attendance-progress {
+  width: min(48%, 280px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-attendance-progress .dashboard-progress {
+  flex: 1;
+}
+
+.dashboard-attendance-progress strong {
+  width: 35px;
+  color: #344054;
+  font-size: 11px;
+  text-align: right;
+}
+
+.dashboard-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.dashboard-quick-actions button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 15px;
+  border: 1px solid #e9edf4;
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
+}
+
+.dashboard-quick-actions button:hover {
+  border-color: #c9c5ff;
+  background: #fbfaff;
+}
+
+.dashboard-quick-actions button > span {
+  font-size: 19px;
+}
+
+.dashboard-quick-actions strong {
+  color: #344054;
+  font-size: 12px;
+}
+
+.dashboard-quick-actions small {
+  color: #8992a3;
+  font-size: 10px;
+}
+
+@media (max-width: 1000px) {
+  .dashboard-quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-student-info {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-quick-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dashboard-attendance-item {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dashboard-attendance-progress {
+    width: 100%;
+  }
+}

@@ -1,0 +1,4 @@
+project_id = "student-portal"
+
+[functions.teacher-account-admin]
+verify_jwt = false

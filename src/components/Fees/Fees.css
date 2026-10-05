@@ -1,0 +1,93 @@
+.fees-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.fees-page-header,
+.fees-card-header {
+  margin-bottom: 0;
+}
+
+.fees-summary {
+  margin-bottom: 0;
+}
+
+.fees-status-badge {
+  background: #fff4e5;
+  color: #b45309;
+}
+
+.fees-progress-section {
+  padding: 6px 0 2px;
+}
+
+.fees-progress-header {
+  font-size: 12px;
+}
+
+.fees-progress-bar {
+  height: 11px;
+}
+
+.fees-progress-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  color: #7b8495;
+  font-size: 10px;
+}
+
+.fee-details-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.fee-detail-row,
+.fee-detail-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 14px 0;
+  border-bottom: 1px solid #eff1f5;
+}
+
+.fee-detail-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.fee-detail-row strong,
+.fee-detail-total strong {
+  color: #344054;
+  font-size: 12px;
+}
+
+.fee-detail-row span,
+.fee-detail-total span {
+  color: #8992a3;
+  font-size: 10px;
+}
+
+.fee-detail-total {
+  border-bottom: 0;
+}
+
+.fees-notice {
+  border-color: #f5dfc0;
+  background: #fffaf2;
+}
+
+.fees-notice-icon {
+  background: #fff0d7;
+  color: #b45309;
+}
+
+@media (max-width: 480px) {
+  .fees-progress-info {
+    flex-direction: column;
+  }
+}
