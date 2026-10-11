@@ -1,5 +1,6 @@
 .courses-page {
   width: 100%;
+  min-width: 0;
 }
 
 /* =========================
@@ -64,6 +65,7 @@
 ========================= */
 
 .course-card {
+  min-width: 0;
   overflow: hidden;
   border: 1px solid #e7ebf0;
   border-radius: 15px;
@@ -97,7 +99,7 @@
   font-size: 20px;
 }
 
-.course-code {
+.courses-page .course-code {
   padding: 6px 9px;
   border-radius: 6px;
   background: #f1f0ff;

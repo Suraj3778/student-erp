@@ -28,6 +28,7 @@ export default function Sidebar({
     : userRole === 'teacher'
       ? [
           { id: 'teacher-workspace', label: 'Attendance & Marks', icon: '📊' },
+          { id: 'timetable', label: 'Teaching Schedule', icon: '🗓️' },
           { id: 'profile', label: 'Faculty Profile', icon: '👤' },
         ]
       : [

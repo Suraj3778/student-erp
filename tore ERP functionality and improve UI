@@ -1,0 +1,44 @@
+warning: in the working copy of 'index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/App.css', LF will be replaced by CRLF the next time Git touches it
+ index.html                                         |    3 [32m+[m[31m-[m
+ src/App.css                                        |  505 [32m++[m[31m-----[m
+ src/App.jsx                                        |  131 [32m+[m[31m-[m
+ src/components/Admin.css                           |  246 [32m++++[m
+ src/components/Admin.jsx                           |  440 [32m++++++[m
+ src/components/Admin/AdminDashboard.css            |    1 [32m+[m
+ .../Admin/Assignments/AssignmentsAdmin.css         |  293 [32m++++[m
+ .../Admin/Assignments/AssignmentsAdmin.jsx         |  463 [32m++++++[m
+ .../Admin/Attendance/AttendanceAdmin.css           |  275 [32m++++[m
+ .../Admin/Attendance/AttendanceAdmin.jsx           |  427 [32m++++++[m
+ src/components/Admin/Courses/CoursesAdmin.css      |  283 [32m++++[m
+ src/components/Admin/Courses/CoursesAdmin.jsx      |  355 [32m+++++[m
+ src/components/Admin/Fees/FeesAdmin.css            |  286 [32m++++[m
+ src/components/Admin/Fees/FeesAdmin.jsx            |  444 [32m++++++[m
+ src/components/Admin/Results/ResultsAdmin.css      |  269 [32m++++[m
+ src/components/Admin/Results/ResultsAdmin.jsx      |  436 [32m++++++[m
+ src/components/Admin/Students/Students.css         |  262 [32m++++[m
+ src/components/Admin/Students/Students.jsx         |  210 [32m+++[m
+ src/components/Assignments/Assignments.css         |  385 [32m+++[m[31m--[m
+ src/components/Assignments/AssignmentsPage.jsx     |  296 [32m+[m[31m---[m
+ src/components/Attendance/Attendance.css           |    5 [32m+[m[31m-[m
+ src/components/Auth.css                            |  632 [32m++++++[m[31m---[m
+ src/components/Auth.jsx                            |  893 [32m+++++++[m[31m-----[m
+ src/components/Courses/Courses.css                 |    4 [32m+[m[31m-[m
+ src/components/Courses/Courses.jsx                 |  100 [32m+[m[31m-[m
+ src/components/Dashboard/Dashboard.css             |  711 [32m++++++++[m[31m--[m
+ src/components/Dashboard/Dashboard.jsx             |  472 [32m+++[m[31m----[m
+ src/components/Fees/Fees.css                       |  294 [32m+++[m[31m-[m
+ src/components/Layout/Header.css                   |  174 [32m++[m[31m-[m
+ src/components/Layout/Sidebar.css                  |  213 [32m++[m[31m-[m
+ src/components/Layout/Sidebar.jsx                  |    1 [32m+[m
+ src/components/Profile/Profile.css                 |    4 [32m+[m[31m-[m
+ src/components/Profile/Profile.jsx                 |  511 [32m+++[m[31m----[m
+ src/components/ResetPassword.css                   |  183 [32m+++[m
+ src/components/ResetPassword.jsx                   |  189 [32m+++[m
+ src/components/Results/Results.css                 |  304 [32m+++[m[31m-[m
+ src/components/Results/Results.jsx                 |  223 [32m++[m[31m-[m
+ src/components/Teacher/TeacherWorkspace.css        | 1482 [32m+++++[m[31m---------------[m
+ src/components/Teacher/TeacherWorkspace.jsx        |  280 [32m+++[m[31m-[m
+ src/components/Timetable/Timetable.css             |  256 [32m++[m[31m--[m
+ src/components/Timetable/Timetable.jsx             |  182 [32m++[m[31m-[m
+ 41 files changed, 9450 insertions(+), 3673 deletions(-)

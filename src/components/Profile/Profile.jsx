@@ -1,48 +1,95 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { supabase } from '../../lib/supabase'
 import './Profile.css'
 
-export default function Profile({
-  profile = null,
-  user = null,
-  onSave,
-  allowAddress = false,
-  accountRole = 'user',
-  assignedSubjects = [],
-}) {
-  const [showEdit, setShowEdit] = useState(false)
+export default function Profile({ profile, user }) {
   const [form, setForm] = useState({
-    full_name: profile?.full_name || user?.user_metadata?.full_name || '',
-    phone: profile?.phone || '',
-    address: profile?.address || '',
+    full_name: '',
+    phone: '',
   })
+
   const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState(null)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
 
-  const studentName =
-    profile?.full_name ||
-    user?.user_metadata?.full_name ||
-    'Student'
+  useEffect(() => {
+    setForm({
+      full_name: profile?.full_name || '',
+      phone: profile?.phone || '',
+    })
+  }, [profile])
 
-  const email =
-    profile?.email ||
-    user?.email ||
-    'Not available'
+  function handleChange(e) {
+    const { name, value } = e.target
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+
+    setMessage('')
+    setError('')
+  }
+
+  async function handleSave(e) {
+    e.preventDefault()
+
+    setMessage('')
+    setError('')
+
+    if (!form.full_name.trim()) {
+      setError('Please enter your full name.')
+      return
+    }
+
+    try {
+      setSaving(true)
+
+      const {
+        data,
+        error: updateError,
+      } = await supabase
+        .from('profiles')
+        .update({
+          full_name: form.full_name.trim(),
+          phone: form.phone.trim(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id)
+        .select()
+        .single()
+
+      if (updateError) {
+        throw updateError
+      }
+
+      setForm({
+        full_name: data.full_name || '',
+        phone: data.phone || '',
+      })
+
+      setMessage('Profile updated successfully.')
+
+    } catch (err) {
+      console.error('Profile update error:', err)
+
+      setError(
+        err.message ||
+        'Unable to update profile.'
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const studentId =
-    profile?.student_id ||
-    'N/A'
-
-  const phone =
-    profile?.phone ||
-    'Not available'
+    profile?.student_id || 'N/A'
 
   const course =
-    profile?.course ||
-    'BCA'
+    profile?.course || 'BCA'
 
   const semester =
-    profile?.semester ||
-    '—'
+    profile?.semester || 6
 
   const department =
     profile?.department ||
@@ -51,335 +98,233 @@ export default function Profile({
   const university =
     profile?.university ||
     'United University Prayagraj'
-  const isStudent = accountRole === 'user'
-  const roleLabel = accountRole === 'admin' ? 'Administrator' : accountRole === 'teacher' ? 'Teacher' : 'Student'
-  const roleId = accountRole === 'teacher' ? profile?.teacher_id || email : null
 
-  const profileImage =
-    profile?.profile_image ||
+  const email =
+    profile?.email ||
+    user?.email ||
     ''
-
-  const initial =
-    studentName
-      .charAt(0)
-      .toUpperCase()
 
   return (
     <section className="profile-page">
 
       {/* Header */}
-      <div className="profile-page-header">
 
+      <div className="profile-page-header">
         <div>
           <h1>My Profile</h1>
 
           <p>
-            View and manage your {roleLabel.toLowerCase()} profile.
+            View and update your personal information.
           </p>
         </div>
-
-        <button
-          type="button"
-          className="profile-edit-btn"
-          onClick={() =>
-            setShowEdit(!showEdit)
-          }
-        >
-          {showEdit ? 'Cancel' : 'Edit Profile'}
-        </button>
-
       </div>
 
-      {/* Profile Hero */}
-      <section className="profile-hero">
+      {/* Profile Card */}
 
-        <div className="profile-avatar">
+      <div className="profile-layout">
 
-          {profileImage ? (
-            <img
-              src={profileImage}
-              alt={studentName}
-            />
-          ) : (
-            <span>
-              {initial}
-            </span>
-          )}
+        {/* Left Profile Card */}
 
-        </div>
+        <section className="profile-card profile-overview">
 
-        <div className="profile-hero-info">
+          <div className="profile-avatar">
+            {form.full_name
+              ? form.full_name
+                  .charAt(0)
+                  .toUpperCase()
+              : 'S'}
+          </div>
 
           <h2>
-            {studentName}
+            {form.full_name || 'Student'}
           </h2>
 
-          <p>{isStudent ? `${course} • Semester ${semester}` : roleLabel}</p>
-          {isStudent ? (
-          <span className="profile-student-id">Student ID: {studentId}</span>
-          ) : (
-          <span className="profile-student-id">{roleLabel} account · {email}</span>
-          )}
+          <p className="profile-student-id">
+            {studentId}
+          </p>
 
-        </div>
+          <span className="profile-course-badge">
+            {course}
+          </span>
 
-      </section>
-
-      {/* Profile Details */}
-      <section className="profile-card">
-
-        <div className="profile-card-header">
-
-          <div>
-            <h2>Personal Information</h2>
-
-            <p>Your basic account information.</p>
-          </div>
-
-        </div>
-
-        <div className="profile-details-grid">
-
-          <div className="profile-detail">
-
-            <span>Full Name</span>
-
-            <strong>
-              {studentName}
-            </strong>
-
-          </div>
-
-          <div className="profile-detail">
-
-            <span>Email Address</span>
-
-            <strong>
-              {email}
-            </strong>
-
-          </div>
-
-          {isStudent ? (
-            <div className="profile-detail">
-              <span>Student ID</span>
-              <strong>{studentId}</strong>
-            </div>
-          ) : (
-            <div className="profile-detail">
-              <span>Account role</span>
-              <strong>{roleLabel}</strong>
-            </div>
-          )}
-
-          <div className="profile-detail">
-
-            <span>Phone Number</span>
-
-            <strong>
-              {phone}
-            </strong>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {isStudent ? (
-      <section className="profile-card">
-
-        <div className="profile-card-header">
-
-          <div>
-            <h2>Academic Information</h2>
-
-            <p>
-              Your current academic details.
-            </p>
-          </div>
-
-        </div>
-
-        <div className="profile-details-grid">
-
-          <div className="profile-detail">
-
-            <span>Course</span>
-
-            <strong>
-              {course}
-            </strong>
-
-          </div>
-
-          <div className="profile-detail">
-            <span>Semester</span>
-
-            <strong>
-              Semester {semester}
-            </strong>
-
-          </div>
-
-          <div className="profile-detail">
-            <span>Section</span>
-            <strong>{profile?.section || 'Not assigned'}</strong>
-          </div>
-
-          <div className="profile-detail">
-            <span>Year level</span>
-            <strong>{profile?.year_level || 'Not assigned'}</strong>
-          </div>
-
-          <div className="profile-detail">
-            <span>Academic year</span>
-            <strong>{profile?.academic_year || 'Not assigned'}</strong>
-          </div>
-
-          <div className="profile-detail">
-            <span>Admission year</span>
-            <strong>{profile?.admission_year || 'Not available'}</strong>
-          </div>
-
-          <div className="profile-detail">
-
-            <span>Department</span>
-
-            <strong>
-              {department}
-            </strong>
-
-          </div>
-
-          <div className="profile-detail">
-
-            <span>University</span>
-
-            <strong>
-              {university}
-            </strong>
-
-          </div>
-
-        </div>
-
-      </section>
-      ) : (
-        <section className="profile-card">
-          <div className="profile-card-header">
-            <div><h2>{accountRole === 'admin' ? 'Administrator access' : 'Faculty access'}</h2>
-              <p>{accountRole === 'admin' ? 'Administrative account permissions.' : 'Your assigned subject codes.'}</p>
-            </div>
-          </div>
-          <div className="profile-details-grid">
-            <div className="profile-detail"><span>Account role</span><strong>{roleLabel}</strong></div>
-            <div className="profile-detail"><span>Login ID</span><strong>{roleId || email}</strong></div>
-            {accountRole === 'admin' && <div className="profile-detail"><span>Access</span><strong>Portal administration</strong></div>}
-            {accountRole === 'teacher' && (
-              <div className="profile-detail">
-                <span>Assigned subjects</span>
-                <strong>{assignedSubjects.length ? assignedSubjects.map((subject) => subject.code).filter(Boolean).join(', ') : 'No subjects assigned'}</strong>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Edit Notice */}
-      {showEdit && (
-        <section className="profile-card profile-edit-card">
-
-          <div className="profile-card-header">
+          <div className="profile-overview-details">
 
             <div>
-              <h2>Edit Profile</h2>
-
-              <p>Update your contact details and display name.</p>
+              <span>Semester</span>
+              <strong>
+                {semester}
+              </strong>
             </div>
 
+            <div>
+              <span>Department</span>
+              <strong>
+                {department}
+              </strong>
+            </div>
+
+          </div>
+
+        </section>
+
+        {/* Right Details */}
+
+        <section className="profile-card">
+
+          <div className="profile-card-header">
+            <div>
+              <h2>Personal Information</h2>
+
+              <p>
+                Update your personal details below.
+              </p>
+            </div>
           </div>
 
           <form
             className="profile-form"
-            onSubmit={async (event) => {
-              event.preventDefault()
-              setSaving(true)
-              setMessage(null)
-              try {
-                await onSave?.({
-                  full_name: form.full_name.trim(),
-                  phone: form.phone.trim(),
-                  address: form.address.trim(),
-                })
-                setShowEdit(false)
-                setMessage({ kind: 'success', text: 'Profile updated successfully.' })
-              } catch (error) {
-                setMessage({ kind: 'error', text: error.message || 'Could not update profile.' })
-              } finally {
-                setSaving(false)
-              }
-            }}
+            onSubmit={handleSave}
           >
-            <label className="profile-form-group">
-              <span>Full Name</span>
-              <input required value={form.full_name} onChange={(event) => setForm({ ...form, full_name: event.target.value })} />
-            </label>
-            <label className="profile-form-group">
-              <span>Phone Number</span>
-              <input type="tel" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} />
-            </label>
-            {allowAddress && (
-              <label className="profile-form-group profile-form-wide">
-                <span>Address</span>
-                <input value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} />
+
+            {/* Name */}
+
+            <div className="profile-form-group">
+
+              <label htmlFor="full_name">
+                Full Name
               </label>
-            )}
-            {message && <div className={`profile-${message.kind}`}>{message.text}</div>}
-            <div className="profile-form-actions">
-              <button type="button" className="profile-cancel-btn" onClick={() => setShowEdit(false)}>Cancel</button>
-              <button type="submit" className="profile-save-btn" disabled={saving}>{saving ? 'Saving…' : 'Save changes'}</button>
+
+              <input
+                id="full_name"
+                name="full_name"
+                type="text"
+                value={form.full_name}
+                onChange={handleChange}
+                placeholder="Enter your full name"
+              />
+
             </div>
+
+            {/* Email */}
+
+            <div className="profile-form-group">
+
+              <label htmlFor="email">
+                Email Address
+              </label>
+
+              <input
+                id="email"
+                type="email"
+                value={email}
+                disabled
+              />
+
+              <small>
+                Email is managed through your
+                authentication account.
+              </small>
+
+            </div>
+
+            {/* Phone */}
+
+            <div className="profile-form-group">
+
+              <label htmlFor="phone">
+                Phone Number
+              </label>
+
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={form.phone}
+                onChange={handleChange}
+                placeholder="Enter your phone number"
+              />
+
+            </div>
+
+            {/* Student ID */}
+
+            <div className="profile-form-group">
+
+              <label>
+                Student ID
+              </label>
+
+              <input
+                type="text"
+                value={studentId}
+                disabled
+              />
+
+            </div>
+
+            {/* Course */}
+
+            <div className="profile-form-group">
+
+              <label>
+                Course
+              </label>
+
+              <input
+                type="text"
+                value={course}
+                disabled
+              />
+
+            </div>
+
+            {/* University */}
+
+            <div className="profile-form-group">
+
+              <label>
+                University
+              </label>
+
+              <input
+                type="text"
+                value={university}
+                disabled
+              />
+
+            </div>
+
+            {/* Messages */}
+
+            {message && (
+              <div className="profile-success">
+                ✓ {message}
+              </div>
+            )}
+
+            {error && (
+              <div className="profile-error">
+                ⚠ {error}
+              </div>
+            )}
+
+            {/* Save */}
+
+            <button
+              type="submit"
+              className="profile-save-btn"
+              disabled={saving}
+            >
+              {saving
+                ? 'Saving...'
+                : 'Save Changes'}
+            </button>
+
           </form>
 
         </section>
-      )}
-      {message && !showEdit && <p className={`profile-${message.kind}`}>{message.text}</p>}
 
-      {/* Account Information */}
-      <section className="profile-card">
-
-        <div className="profile-card-header">
-
-          <div>
-            <h2>Account Information</h2>
-
-            <p>
-              Your portal account details.
-            </p>
-          </div>
-
-        </div>
-
-        <div className="profile-account-row">
-
-          <div className="profile-account-icon">
-            🔐
-          </div>
-
-          <div>
-            <strong>
-              Account Status
-            </strong>
-
-            <span>
-              Active
-            </span>
-          </div>
-
-        </div>
-
-      </section>
+      </div>
 
     </section>
   )

@@ -1,81 +1,214 @@
 import './Results.css'
 
-export default function Results({ results = [], studentSemester = 6 }) {
-  const scoredResults = results.map((result) => ({
-    ...result,
-    marks: Number(result.marks || 0),
-    maxMarks: Math.max(1, Number(result.max_marks || 100)),
-  }))
-  const averageMarks = scoredResults.length
-    ? Math.round(scoredResults.reduce((sum, result) => sum + (result.marks / result.maxMarks) * 100, 0) / scoredResults.length)
-    : 0
-  const passedSubjects = scoredResults.filter((result) => (result.marks / result.maxMarks) * 100 >= 40).length
-  const performance = averageMarks >= 85 ? 'Excellent' : averageMarks >= 70 ? 'Good' : averageMarks >= 40 ? 'Fair' : '—'
-  const semesters = scoredResults.map((result) => Number(result.semester)).filter(Number.isFinite)
-  const semester = semesters.length ? Math.max(...semesters) : studentSemester
+export default function Results({ results = [] }) {
+  const totalMarks = results.reduce(
+    (sum, item) => sum + Number(item.marks || 0),
+    0
+  )
+
+  const totalMaxMarks = results.reduce(
+    (sum, item) => sum + Number(item.max_marks || 0),
+    0
+  )
+
+  const percentage =
+    totalMaxMarks > 0
+      ? Math.round((totalMarks / totalMaxMarks) * 100)
+      : 0
+
+  function getGradeClass(grade) {
+    if (!grade) return ''
+
+    const value = grade.toUpperCase()
+
+    if (value.startsWith('A')) return 'excellent'
+    if (value.startsWith('B')) return 'good'
+    if (value.startsWith('C')) return 'average'
+
+    return 'low'
+  }
 
   return (
     <section className="results-page">
+
+      {/* Header */}
       <div className="results-page-header">
         <div>
           <h1>Results</h1>
-          <p>View your semester examination results and academic performance.</p>
+          <p>
+            View your academic performance and semester results.
+          </p>
         </div>
-        <div className="result-semester-badge">Semester {semester}</div>
+
+        <div className="results-semester">
+          <span>Current Semester</span>
+          <strong>
+            Semester {results[0]?.semester || 6}
+          </strong>
+        </div>
       </div>
 
+      {/* Summary */}
       <div className="results-summary">
-        <div className="result-summary-card">
-          <div className="result-summary-icon purple">📊</div>
-          <div><span>Average Marks</span><strong>{averageMarks}%</strong></div>
+
+        <div className="results-summary-card">
+          <div className="results-summary-icon">
+            %
+          </div>
+
+          <div>
+            <span>Overall Percentage</span>
+            <strong>{percentage}%</strong>
+          </div>
         </div>
-        <div className="result-summary-card">
-          <div className="result-summary-icon green">✓</div>
-          <div><span>Subjects Passed</span><strong>{passedSubjects}/{scoredResults.length}</strong></div>
+
+        <div className="results-summary-card">
+          <div className="results-summary-icon green">
+            ✓
+          </div>
+
+          <div>
+            <span>Total Marks</span>
+            <strong>
+              {totalMarks}/{totalMaxMarks}
+            </strong>
+          </div>
         </div>
-        <div className="result-summary-card">
-          <div className="result-summary-icon blue">🎓</div>
-          <div><span>Performance</span><strong>{performance}</strong></div>
+
+        <div className="results-summary-card">
+          <div className="results-summary-icon blue">
+            #
+          </div>
+
+          <div>
+            <span>Subjects</span>
+            <strong>{results.length}</strong>
+          </div>
         </div>
+
       </div>
 
+      {/* Results Table */}
       <section className="results-card">
+
         <div className="results-card-header">
-          <div><h2>Semester Results</h2><p>Subject-wise marks and grades.</p></div>
+          <div>
+            <h2>Subject-wise Results</h2>
+            <p>
+              Your marks and grades for each course.
+            </p>
+          </div>
         </div>
-        {scoredResults.length ? (
+
+        {results.length === 0 ? (
+          <div className="results-empty">
+            <div className="results-empty-icon">
+              🎓
+            </div>
+
+            <h3>No Results Available</h3>
+
+            <p>
+              Your examination results will appear here
+              once they are published.
+            </p>
+          </div>
+        ) : (
           <div className="results-table-wrapper">
+
             <table className="results-table">
-              <thead><tr><th>Course</th><th>Code</th><th>Marks</th><th>Maximum</th><th>Grade</th><th>Status</th></tr></thead>
+
+              <thead>
+                <tr>
+                  <th>Course</th>
+                  <th>Code</th>
+                  <th>Marks</th>
+                  <th>Percentage</th>
+                  <th>Grade</th>
+                </tr>
+              </thead>
+
               <tbody>
-                {scoredResults.map((result) => {
-                  const passed = (result.marks / result.maxMarks) * 100 >= 40
+
+                {results.map((result) => {
+                  const marks = Number(result.marks || 0)
+                  const maxMarks = Number(
+                    result.max_marks || 0
+                  )
+
+                  const subjectPercentage =
+                    maxMarks > 0
+                      ? Math.round(
+                          (marks / maxMarks) * 100
+                        )
+                      : 0
+
                   return (
                     <tr key={result.id}>
-                      <td><strong>{result.courses?.name || 'Course'}</strong></td>
-                      <td>{result.courses?.code || '—'}</td>
-                      <td>{result.marks}</td>
-                      <td>{result.maxMarks}</td>
-                      <td><span className="result-grade">{result.grade || '—'}</span></td>
-                      <td><span className={`result-status ${passed ? 'pass' : 'fail'}`}>{passed ? 'Pass' : 'Needs review'}</span></td>
+
+                      <td>
+                        <strong>
+                          {result.courses?.name ||
+                            'Course'}
+                        </strong>
+                      </td>
+
+                      <td className="result-code">
+                        {result.courses?.code || 'N/A'}
+                      </td>
+
+                      <td>
+                        <strong>
+                          {marks}/{maxMarks}
+                        </strong>
+                      </td>
+
+                      <td>
+                        <div className="result-progress">
+
+                          <div className="result-progress-top">
+                            <strong>
+                              {subjectPercentage}%
+                            </strong>
+                          </div>
+
+                          <div className="result-progress-bar">
+                            <span
+                              style={{
+                                width: `${Math.min(
+                                  subjectPercentage,
+                                  100
+                                )}%`,
+                              }}
+                            ></span>
+                          </div>
+
+                        </div>
+                      </td>
+
+                      <td>
+                        <span
+                          className={`result-grade ${getGradeClass(
+                            result.grade
+                          )}`}
+                        >
+                          {result.grade || 'N/A'}
+                        </span>
+                      </td>
+
                     </tr>
                   )
                 })}
+
               </tbody>
+
             </table>
+
           </div>
-        ) : (
-          <div className="no-data">Results will appear here when published by the university.</div>
         )}
+
       </section>
 
-      <section className="results-performance">
-        <div className="results-performance-icon">🏆</div>
-        <div>
-          <h3>{scoredResults.length ? 'Your academic summary' : 'Results not published yet'}</h3>
-          <p>{scoredResults.length ? `Your current average is ${averageMarks}%.` : 'Please check again after your results are released.'}</p>
-        </div>
-      </section>
     </section>
   )
 }

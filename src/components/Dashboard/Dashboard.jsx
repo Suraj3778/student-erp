@@ -1,64 +1,73 @@
 import './Dashboard.css'
 
+function formatDate(date) {
+  if (!date) return 'N/A'
+
+  return new Date(date).toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
 export default function Dashboard({
   studentName = 'Student',
   studentId = 'N/A',
   studentCourse = 'BCA',
-  studentSemester = '—',
-  studentSection = '',
-  studentYearLevel = '',
-  academicYear = '',
+  studentSemester = 6,
   courses = [],
   assignments = [],
   attendance = [],
   averageAttendance = 0,
   pendingAssignments = 0,
   setActive,
-  isAdmin = false,
 }) {
-  const completedCourses = courses.filter(
-    (course) => Number(course.progress || 0) >= 75
-  ).length
+  const firstName =
+    studentName.split(' ')[0] || 'Student'
+
+  const upcomingAssignments = assignments
+    .slice(0, 4)
+
+  const topCourses = courses.slice(0, 5)
 
   return (
-    <div className="dashboard-page">
+    <section className="dashboard-page">
 
       {/* =========================
-          HEADER
+          WELCOME
       ========================= */}
 
-      <div className="dashboard-header">
+      <div className="dashboard-welcome">
 
         <div>
-          <p className="dashboard-greeting">
-            Welcome back,
+          <p className="dashboard-welcome-label">
+            Student Dashboard
           </p>
 
           <h1>
-            {studentName} 👋
+            Welcome back, {firstName}! 👋
           </h1>
 
-          <p className="dashboard-subtitle">
-            {isAdmin ? 'Here is your administrative overview.' : 'Here is your academic overview.'}
+          <p className="dashboard-welcome-text">
+            Here's what's happening with your
+            academic progress.
           </p>
         </div>
 
-        <div className="dashboard-student-info">
-
-          <strong>
-            {studentId}
-          </strong>
-
+        <div className="dashboard-student-badge">
           <span>
-            {[studentCourse, `Semester ${studentSemester}`, studentSection && `Section ${studentSection}`, studentYearLevel && `Year ${studentYearLevel}`, academicYear].filter(Boolean).join(' • ')}
+            {studentCourse}
           </span>
 
+          <strong>
+            Semester {studentSemester}
+          </strong>
         </div>
 
       </div>
 
       {/* =========================
-          QUICK STATS
+          STATS
       ========================= */}
 
       <div className="dashboard-stats">
@@ -70,9 +79,10 @@ export default function Dashboard({
           </div>
 
           <div>
-            <span>{isAdmin ? 'Total Students' : 'Total Courses'}</span>
+            <span>Total Courses</span>
+
             <strong>
-              {isAdmin ? '1248' : courses.length}
+              {courses.length}
             </strong>
           </div>
 
@@ -85,9 +95,10 @@ export default function Dashboard({
           </div>
 
           <div>
-            <span>{isAdmin ? 'Attendance Rate' : 'Attendance'}</span>
+            <span>Attendance</span>
+
             <strong>
-              {isAdmin ? '92%' : `${averageAttendance}%`}
+              {averageAttendance}%
             </strong>
           </div>
 
@@ -100,9 +111,10 @@ export default function Dashboard({
           </div>
 
           <div>
-            <span>{isAdmin ? 'Open Tasks' : 'Assignments'}</span>
+            <span>Assignments</span>
+
             <strong>
-              {isAdmin ? '34' : pendingAssignments}
+              {pendingAssignments}
             </strong>
           </div>
 
@@ -115,9 +127,10 @@ export default function Dashboard({
           </div>
 
           <div>
-            <span>{isAdmin ? 'Active Courses' : 'Completed Courses'}</span>
-            <strong>
-              {isAdmin ? '24' : completedCourses}
+            <span>Student ID</span>
+
+            <strong className="student-id-value">
+              {studentId}
             </strong>
           </div>
 
@@ -129,351 +142,312 @@ export default function Dashboard({
           MAIN GRID
       ========================= */}
 
-      <div className="dashboard-grid">
+      <div className="dashboard-main-grid">
 
-        {/* COURSES */}
+        {/* =========================
+            COURSES
+        ========================= */}
 
         <section className="dashboard-card">
 
           <div className="dashboard-card-header">
 
             <div>
-              <h2>
-                My Courses
-              </h2>
+              <h2>My Courses</h2>
 
               <p>
-                Your enrolled courses
+                Your currently enrolled courses.
               </p>
             </div>
 
             <button
               type="button"
-              onClick={() =>
-                setActive?.('courses')
-              }
+              onClick={() => setActive?.('courses')}
+              className="dashboard-view-btn"
             >
               View All
             </button>
 
           </div>
 
-          {courses.length === 0 ? (
+          {topCourses.length === 0 ? (
             <div className="dashboard-empty">
               <span>📚</span>
-
-              <p>
-                No courses found.
-              </p>
+              <p>No courses available.</p>
             </div>
           ) : (
             <div className="dashboard-course-list">
 
-              {courses.slice(0, 5).map(
-                (course) => {
+              {topCourses.map((course) => (
 
-                  const progress = Math.min(
-                    Math.max(
-                      Number(
-                        course.progress || 0
-                      ),
-                      0
-                    ),
-                    100
-                  )
+                <div
+                  className="dashboard-course-item"
+                  key={course.id}
+                >
 
-                  return (
-                    <div
-                      className="dashboard-course-item"
-                      key={course.id}
-                    >
+                  <div className="dashboard-course-icon">
+                    {course.name?.charAt(0) || 'C'}
+                  </div>
 
-                      <div className="dashboard-course-info">
+                  <div className="dashboard-course-info">
 
-                        <div>
-                          <strong>
-                            {course.name}
-                          </strong>
+                    <h3>
+                      {course.name}
+                    </h3>
 
-                          <span>
-                            {course.code}
-                          </span>
-                        </div>
+                    <p>
+                      {course.code}
+                      {' • '}
+                      {course.teacher || 'Faculty'}
+                    </p>
 
-                        <b>
-                          {progress}%
-                        </b>
+                    <div className="dashboard-course-progress">
 
+                      <div>
+                        <span>
+                          Progress
+                        </span>
+
+                        <strong>
+                          {course.progress || 0}%
+                        </strong>
                       </div>
 
-                      <div className="dashboard-progress">
-
+                      <div className="dashboard-progress-bar">
                         <span
                           style={{
-                            width: `${progress}%`,
+                            width: `${Math.min(
+                              Number(course.progress || 0),
+                              100
+                            )}%`,
                           }}
-                        />
-
+                        ></span>
                       </div>
 
                     </div>
-                  )
-                }
-              )}
+
+                  </div>
+
+                  <span className="dashboard-credit">
+                    {course.credits || 0} Credits
+                  </span>
+
+                </div>
+
+              ))}
 
             </div>
           )}
 
         </section>
 
-        {/* ASSIGNMENTS */}
+        {/* =========================
+            ATTENDANCE
+        ========================= */}
 
         <section className="dashboard-card">
 
           <div className="dashboard-card-header">
 
             <div>
-              <h2>
-                Assignments
-              </h2>
+              <h2>Attendance</h2>
 
               <p>
-                Upcoming assignments
+                Your subject-wise attendance.
               </p>
             </div>
 
             <button
               type="button"
-              onClick={() =>
-                setActive?.('assignments')
-              }
+              onClick={() => setActive?.('attendance')}
+              className="dashboard-view-btn"
             >
               View All
             </button>
 
           </div>
 
-          {assignments.length === 0 ? (
-            <div className="dashboard-empty">
-              <span>📝</span>
+          <div className="dashboard-attendance-overview">
+
+            <div
+              className="attendance-circle"
+              style={{
+                '--attendance':
+                  `${Math.min(
+                    averageAttendance,
+                    100
+                  )}%`,
+              }}
+            >
+              <div>
+                <strong>
+                  {averageAttendance}%
+                </strong>
+
+                <span>
+                  Overall
+                </span>
+              </div>
+            </div>
+
+            <div className="attendance-overview-text">
+
+              <h3>
+                {averageAttendance >= 75
+                  ? 'Good Attendance'
+                  : 'Attendance is Low'}
+              </h3>
 
               <p>
-                No assignments found.
+                {averageAttendance >= 75
+                  ? 'You are meeting the minimum attendance requirement.'
+                  : 'Please attend more classes to maintain the required attendance.'}
               </p>
+
+              <div className="attendance-requirement">
+                Minimum Required: <strong>75%</strong>
+              </div>
+
             </div>
-          ) : (
-            <div className="dashboard-assignment-list">
 
-              {assignments
-                .slice(0, 5)
-                .map((assignment) => (
+          </div>
 
-                  <div
-                    className="dashboard-assignment-item"
-                    key={assignment.id}
-                  >
+          <div className="dashboard-attendance-list">
 
-                    <div className="dashboard-assignment-icon">
-                      📝
-                    </div>
+            {attendance.slice(0, 4).map((item) => {
 
-                    <div className="dashboard-assignment-info">
+              const percentage =
+                Number(item.percentage || 0)
 
-                      <strong>
-                        {assignment.title}
-                      </strong>
+              return (
+                <div
+                  className="dashboard-attendance-row"
+                  key={item.id}
+                >
 
-                      <span>
-                        {assignment.courses?.name ||
-                          'Course'}
-                      </span>
+                  <div>
+                    <strong>
+                      {item.courses?.name || 'Course'}
+                    </strong>
 
-                    </div>
-
-                    <div className="dashboard-assignment-date">
-
-                      {assignment.due_date
-                        ? new Date(
-                            assignment.due_date
-                          ).toLocaleDateString(
-                            'en-IN',
-                            {
-                              day: 'numeric',
-                              month: 'short',
-                            }
-                          )
-                        : 'No date'}
-
-                    </div>
-
+                    <span>
+                      {item.courses?.code || 'N/A'}
+                    </span>
                   </div>
 
-                ))}
+                  <div className="dashboard-attendance-value">
+                    <strong>
+                      {percentage}%
+                    </strong>
 
-            </div>
-          )}
+                    <span>
+                      {item.attended || 0}/
+                      {item.total || 0}
+                    </span>
+                  </div>
+
+                </div>
+              )
+            })}
+
+          </div>
 
         </section>
 
       </div>
 
       {/* =========================
-          ATTENDANCE
+          ASSIGNMENTS
       ========================= */}
 
-      <section className="dashboard-card dashboard-attendance-card">
+      <section className="dashboard-card dashboard-assignments-card">
 
         <div className="dashboard-card-header">
 
           <div>
-            <h2>
-              Attendance Overview
-            </h2>
+            <h2>Upcoming Assignments</h2>
 
             <p>
-              Your subject-wise attendance
+              Keep track of your pending assignments.
             </p>
           </div>
 
           <button
             type="button"
-            onClick={() =>
-              setActive?.('attendance')
-            }
+            onClick={() => setActive?.('assignments')}
+            className="dashboard-view-btn"
           >
-            View Details
+            View All
           </button>
 
         </div>
 
-        {attendance.length === 0 ? (
+        {upcomingAssignments.length === 0 ? (
           <div className="dashboard-empty">
-            <span>📊</span>
-
-            <p>
-              No attendance data available.
-            </p>
+            <span>📝</span>
+            <p>No assignments available.</p>
           </div>
         ) : (
-          <div className="dashboard-attendance-list">
+          <div className="dashboard-assignment-list">
 
-            {attendance
-              .slice(0, 5)
-              .map((item) => {
+            {upcomingAssignments.map((assignment) => (
 
-                const total = Number(item.total)
-                const attended = Number(item.attended)
-                const percentage = total > 0 && Number.isFinite(attended)
-                  ? Math.min(Math.max(Math.round((attended / total) * 100), 0), 100)
-                  : 0
+              <div
+                className="dashboard-assignment-item"
+                key={assignment.id}
+              >
 
-                return (
-                  <div
-                    className="dashboard-attendance-item"
-                    key={item.id}
-                  >
+                <div className="assignment-icon">
+                  📝
+                </div>
 
-                    <div className="dashboard-attendance-info">
+                <div className="assignment-info">
 
-                      <strong>
-                        {item.courses?.name ||
-                          'Course'}
-                      </strong>
+                  <h3>
+                    {assignment.title}
+                  </h3>
 
-                      <span>
-                        {item.courses?.code ||
-                          'N/A'}
-                      </span>
+                  <p>
+                    {assignment.courses?.name ||
+                      'Course'}
+                  </p>
 
-                    </div>
+                </div>
 
-                    <div className="dashboard-attendance-progress">
+                <div className="assignment-due">
 
-                      <div className="dashboard-progress">
+                  <span>
+                    Due Date
+                  </span>
 
-                        <span
-                          style={{
-                            width: `${percentage}%`,
-                          }}
-                        />
+                  <strong>
+                    {formatDate(
+                      assignment.due_date
+                    )}
+                  </strong>
 
-                      </div>
+                </div>
 
-                      <strong>
-                        {percentage}%
-                      </strong>
+                <span
+                  className={`assignment-priority ${
+                    String(
+                      assignment.priority || ''
+                    ).toLowerCase()
+                  }`}
+                >
+                  {assignment.priority ||
+                    'Medium'}
+                </span>
 
-                    </div>
+              </div>
 
-                  </div>
-                )
-              })}
+            ))}
 
           </div>
         )}
 
       </section>
 
-      {/* =========================
-          QUICK ACTIONS
-      ========================= */}
-
-      <section className="dashboard-quick-actions">
-
-        <button
-          type="button"
-          onClick={() =>
-            setActive?.('courses')
-          }
-        >
-          <span>📚</span>
-          <strong>Courses</strong>
-          <small>
-            View all courses
-          </small>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            setActive?.('attendance')
-          }
-        >
-          <span>📊</span>
-          <strong>Attendance</strong>
-          <small>
-            Check attendance
-          </small>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            setActive?.('assignments')
-          }
-        >
-          <span>📝</span>
-          <strong>Assignments</strong>
-          <small>
-            Check deadlines
-          </small>
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            setActive?.('profile')
-          }
-        >
-          <span>👤</span>
-          <strong>Profile</strong>
-          <small>
-            View your profile
-          </small>
-        </button>
-
-      </section>
-
-    </div>
+    </section>
   )
 }

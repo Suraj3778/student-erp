@@ -30,10 +30,14 @@ export default function TeacherWorkspace({
   students = [],
   enrollments = [],
   attendanceSessions = [],
+  assignments = [],
   onSaveAttendanceSession,
+  onSaveAssignment,
+  onDeleteAssignment,
   user,
 }) {
   const [courseId, setCourseId] = useState('')
+  const [assignmentCourseId, setAssignmentCourseId] = useState('')
   const [sectionFilter, setSectionFilter] = useState('')
   const [semesterFilter, setSemesterFilter] = useState('')
   const [yearLevelFilter, setYearLevelFilter] = useState('')
@@ -44,11 +48,19 @@ export default function TeacherWorkspace({
 
   const [attendance, setAttendance] = useState({})
   const [marks, setMarks] = useState({})
+  const [demoAttendanceSessions, setDemoAttendanceSessions] = useState([])
 
   const [assessmentName, setAssessmentName] = useState('Daily Test')
   const [maxMarks, setMaxMarks] = useState(20)
   const [lectureNumber, setLectureNumber] = useState(1)
   const [sessionType, setSessionType] = useState('theory')
+  const [editingAssignment, setEditingAssignment] = useState(null)
+  const [assignmentForm, setAssignmentForm] = useState({
+    title: '',
+    description: '',
+    due_date: '',
+    priority: 'Medium',
+  })
 
   const [activeTab, setActiveTab] = useState('attendance')
   const [loading, setLoading] = useState(false)
@@ -107,6 +119,83 @@ export default function TeacherWorkspace({
       setCourseId(courses[0].id)
     }
   }, [courses, courseId])
+
+  useEffect(() => {
+    if (courses.length > 0 && !courses.some((course) => course.id === assignmentCourseId)) {
+      setAssignmentCourseId(courses[0].id)
+    }
+  }, [courses, assignmentCourseId])
+
+  function editAssignment(assignment) {
+    setEditingAssignment(assignment)
+    setAssignmentCourseId(assignment.courses?.id || assignment.course_id || courses[0]?.id || '')
+    setAssignmentForm({
+      title: assignment.title || '',
+      description: assignment.description || '',
+      due_date: assignment.due_date || '',
+      priority: assignment.priority || 'Medium',
+    })
+  }
+
+  function resetAssignmentForm() {
+    setEditingAssignment(null)
+    setAssignmentForm({
+      title: '',
+      description: '',
+      due_date: '',
+      priority: 'Medium',
+    })
+  }
+
+  async function saveAssignment(event) {
+    event.preventDefault()
+    setError('')
+    setMessage('')
+    const selectedCourse = courses.find((course) => course.id === assignmentCourseId)
+    if (!selectedCourse || !onSaveAssignment) {
+      setError('Assignment management is unavailable for the selected subject.')
+      return
+    }
+
+    try {
+      setSaving(true)
+      await onSaveAssignment({
+        ...editingAssignment,
+        ...assignmentForm,
+        id: editingAssignment?.id,
+        course_id: selectedCourse.id,
+        courses: {
+          id: selectedCourse.id,
+          code: selectedCourse.code,
+          name: selectedCourse.name,
+        },
+      })
+      setMessage(editingAssignment ? 'Assignment updated.' : 'Assignment created.')
+      resetAssignmentForm()
+    } catch (saveError) {
+      console.error('Assignment save error:', saveError)
+      setError(saveError.message || 'Assignment could not be saved.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function removeAssignment(assignment) {
+    if (!onDeleteAssignment || !window.confirm(`Delete "${assignment.title}"?`)) return
+    setError('')
+    setMessage('')
+    try {
+      setSaving(true)
+      await onDeleteAssignment(assignment.id)
+      if (editingAssignment?.id === assignment.id) resetAssignmentForm()
+      setMessage('Assignment deleted.')
+    } catch (deleteError) {
+      console.error('Assignment delete error:', deleteError)
+      setError(deleteError.message || 'Assignment could not be deleted.')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const loadDailyData = useCallback(async () => {
     if (!currentCourse) return
@@ -280,6 +369,12 @@ export default function TeacherWorkspace({
           ),
           nextSession,
         ])
+        setDemoAttendanceSessions((current) => [
+          ...current.filter((session) =>
+            `${session.course_id}:${session.section || ''}:${session.semester || 0}:${session.year_level || 0}:${session.academic_year || ''}:${session.lecture_number}:${session.session_type}:${session.held_on}` !== sessionKey,
+          ),
+          nextSession,
+        ])
         setMessage(`Attendance successfully saved for ${date}.`)
         return
       }
@@ -416,6 +511,25 @@ export default function TeacherWorkspace({
 
   const absentCount =
     visibleStudents.length - presentCount
+  const assignmentCourse = courses.find((course) => course.id === assignmentCourseId)
+  const visibleAssignments = assignments.filter((assignment) =>
+    (assignment.courses?.id || assignment.course_id) === assignmentCourseId,
+  )
+  const demoSessionKeys = new Set(demoAttendanceSessions.map((session) =>
+    `${session.course_id}:${session.section || ''}:${session.semester || 0}:${session.year_level || 0}:${session.academic_year || ''}:${session.lecture_number}:${session.session_type}:${session.held_on}`,
+  ))
+  const visibleAttendanceSessions = [
+    ...attendanceSessions.filter((session) =>
+      !demoSessionKeys.has(`${session.course_id}:${session.section || ''}:${session.semester || 0}:${session.year_level || 0}:${session.academic_year || ''}:${session.lecture_number}:${session.session_type}:${session.held_on}`),
+    ),
+    ...demoAttendanceSessions,
+  ].filter((session) =>
+    (!currentCourse || (session.course_id || session.courses?.id) === currentCourse.id) &&
+    (!sectionFilter || String(session.section || '') === selectedCohort.section) &&
+    (!semesterFilter || Number(session.semester || 0) === selectedCohort.semester) &&
+    (!yearLevelFilter || Number(session.year_level || 0) === selectedCohort.year_level) &&
+    (!academicYearFilter || String(session.academic_year || '') === selectedCohort.academic_year),
+  )
 
   return (
     <section className="teacher-workspace">
@@ -611,6 +725,22 @@ export default function TeacherWorkspace({
           📝 Daily Marks
         </button>
 
+        <button
+          type="button"
+          className={activeTab === 'history' ? 'active' : ''}
+          onClick={() => setActiveTab('history')}
+        >
+          📚 Attendance History
+        </button>
+
+        <button
+          type="button"
+          className={activeTab === 'assignments' ? 'active' : ''}
+          onClick={() => setActiveTab('assignments')}
+        >
+          📝 Assignments
+        </button>
+
       </div>
 
       {/* Messages */}
@@ -627,7 +757,155 @@ export default function TeacherWorkspace({
       )}
 
       {/* Loading */}
-      {loading && currentCourse && cohortReady ? (
+      {activeTab === 'assignments' ? (
+        <div className="teacher-table-card">
+          <div className="teacher-table-header">
+            <div>
+              <h2>Subject Assignments</h2>
+              <p>Create and maintain assignments for your assigned subjects.</p>
+            </div>
+          </div>
+          {!courses.length ? (
+            <div className="teacher-empty">
+              <h2>No Subject Assigned</h2>
+              <p>Ask an administrator to assign a subject before managing assignments.</p>
+            </div>
+          ) : (
+            <>
+              <form className="teacher-assignment-editor" onSubmit={saveAssignment}>
+                <label>
+                  <span>Assigned subject</span>
+                  <select
+                    value={assignmentCourseId}
+                    onChange={(event) => setAssignmentCourseId(event.target.value)}
+                    required
+                  >
+                    {courses.map((course) => (
+                      <option key={course.id} value={course.id}>
+                        {course.code} — {course.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>Assignment title</span>
+                  <input
+                    value={assignmentForm.title}
+                    onChange={(event) => setAssignmentForm((form) => ({ ...form, title: event.target.value }))}
+                    maxLength={160}
+                    required
+                  />
+                </label>
+                <label>
+                  <span>Due date</span>
+                  <input
+                    type="date"
+                    value={assignmentForm.due_date}
+                    onChange={(event) => setAssignmentForm((form) => ({ ...form, due_date: event.target.value }))}
+                  />
+                </label>
+                <label>
+                  <span>Priority</span>
+                  <select
+                    value={assignmentForm.priority}
+                    onChange={(event) => setAssignmentForm((form) => ({ ...form, priority: event.target.value }))}
+                  >
+                    <option>Low</option>
+                    <option>Medium</option>
+                    <option>High</option>
+                  </select>
+                </label>
+                <label className="teacher-assignment-description">
+                  <span>Description</span>
+                  <textarea
+                    rows="3"
+                    value={assignmentForm.description}
+                    onChange={(event) => setAssignmentForm((form) => ({ ...form, description: event.target.value }))}
+                  />
+                </label>
+                <div className="teacher-assignment-actions">
+                  <button type="submit" className="teacher-save-btn" disabled={saving}>
+                    {saving ? 'Saving…' : editingAssignment ? 'Update assignment' : 'Create assignment'}
+                  </button>
+                  {editingAssignment && (
+                    <button type="button" className="teacher-secondary-btn" onClick={resetAssignmentForm}>
+                      Cancel edit
+                    </button>
+                  )}
+                </div>
+              </form>
+              {!visibleAssignments.length ? (
+                <div className="teacher-empty">
+                  <h2>No Assignments Yet</h2>
+                  <p>There are no assignments for {assignmentCourse?.code || 'this subject'}.</p>
+                </div>
+              ) : (
+                <div className="teacher-assignment-list">
+                  {visibleAssignments.map((assignment) => (
+                    <article className="teacher-assignment-item" key={assignment.id}>
+                      <div>
+                        <strong>{assignment.title}</strong>
+                        <span>{assignment.courses?.code || assignmentCourse?.code} · Due {assignment.due_date || 'No due date'}</span>
+                        {assignment.description && <p>{assignment.description}</p>}
+                      </div>
+                      <span className={`teacher-assignment-priority ${String(assignment.priority || 'Medium').toLowerCase()}`}>
+                        {assignment.priority || 'Medium'}
+                      </span>
+                      <div className="teacher-assignment-actions">
+                        <button type="button" className="teacher-secondary-btn" onClick={() => editAssignment(assignment)}>
+                          Edit
+                        </button>
+                        <button type="button" className="teacher-danger-btn" disabled={saving} onClick={() => removeAssignment(assignment)}>
+                          Delete
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      ) : activeTab === 'history' ? (
+        <div className="teacher-table-card">
+          <div className="teacher-table-header">
+            <div>
+              <h2>Class Attendance History</h2>
+              <p>{currentCourse ? `${currentCourse.code} · saved class sessions` : 'Select an assigned subject to view its saved sessions.'}</p>
+            </div>
+          </div>
+          {!currentCourse ? (
+            <div className="teacher-empty"><h2>Select a Subject</h2><p>Choose an assigned subject above to view attendance history.</p></div>
+          ) : !visibleAttendanceSessions.length ? (
+            <div className="teacher-empty"><h2>No Attendance History</h2><p>No class sessions match this subject and cohort selection.</p></div>
+          ) : (
+            <div className="teacher-table-wrapper">
+              <table className="teacher-table">
+                <thead>
+                  <tr><th>Date</th><th>Lecture</th><th>Type</th><th>Section / Semester</th><th>Year / Academic year</th><th>Present</th><th>Students marked</th></tr>
+                </thead>
+                <tbody>
+                  {visibleAttendanceSessions.map((session) => {
+                    const records = session.records || session.attendance_records || []
+                    const present = records.filter((record) => record.status === 'present').length
+                    return (
+                      <tr key={session.id}>
+                        <td>{session.held_on}</td>
+                        <td>{session.lecture_number}</td>
+                        <td>{session.session_type}</td>
+                        <td>{session.section || '—'} / {session.semester || '—'}</td>
+                        <td>{session.year_level || '—'} / {session.academic_year || '—'}</td>
+                        <td>{present}</td>
+                        <td>{records.length}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      ) : loading && currentCourse && cohortReady ? (
         <div className="teacher-empty">
           Loading daily data...
         </div>

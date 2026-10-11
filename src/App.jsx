@@ -13,6 +13,7 @@ import {
 } from './lib/demoData'
 
 import Auth from './components/Auth'
+import AboutDeveloper from './components/AboutDeveloper'
 import ForcedPasswordChange from './components/Auth/ForcedPasswordChange'
 
 import Header from './components/Layout/Header'
@@ -225,6 +226,9 @@ function databaseRecord(collection, record) {
 }
 
 function App() {
+  const [isAboutPage, setIsAboutPage] = useState(
+    () => window.location.hash === '#/about-developer',
+  )
   const [user, setUser] = useState(null)
   const [userRole, setUserRole] = useState('user')
   const [roleResolved, setRoleResolved] = useState(false)
@@ -247,6 +251,20 @@ function App() {
 
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+
+  useEffect(() => {
+    const updateRoute = () => {
+      setIsAboutPage(window.location.hash === '#/about-developer')
+    }
+    window.addEventListener('hashchange', updateRoute)
+    return () => window.removeEventListener('hashchange', updateRoute)
+  }, [])
+
+  useEffect(() => {
+    document.title = isAboutPage
+      ? 'About the Developer | Student ERP'
+      : 'Student ERP'
+  }, [isAboutPage])
 
   // =========================
   // CHECK SESSION
@@ -301,6 +319,14 @@ function App() {
     try {
       setLoading(true)
       setLoadError('')
+
+      function reportLoadError(resource, error) {
+        console.error(`${resource} load error:`, error)
+        setLoadError((current) => {
+          const message = `${resource} data could not be loaded. ${error.message || 'Check your access and try again.'}`
+          return current ? `${current} ${message}` : message
+        })
+      }
 
       if (!isSupabaseConfigured || !supabase || user.user_metadata?.demo_mode) {
         const demoData = getDemoDashboardData(user)
@@ -382,12 +408,8 @@ function App() {
         .single()
 
       if (profileError) {
-        console.error(
-          'Profile error:',
-          profileError
-        )
-        const demoData = getDemoDashboardData(user)
-        setProfile(demoData.profile)
+        reportLoadError('Profile', profileError)
+        setProfile(null)
       } else {
         setProfile(profileData)
       }
@@ -516,12 +538,9 @@ function App() {
         .eq('student_id', user.id)
 
       if (enrollmentError) {
-        console.error(
-          'Courses error:',
-          enrollmentError
-        )
-        const demoData = getDemoDashboardData(user)
-        setCourses(demoData.courses)
+        reportLoadError('Courses', enrollmentError)
+        setCourses([])
+        setEnrollments([])
       } else {
         const courseList =
           enrollmentData
@@ -558,12 +577,8 @@ function App() {
         })
 
       if (assignmentError) {
-        console.error(
-          'Assignments error:',
-          assignmentError
-        )
-        const demoData = getDemoDashboardData(user)
-        setAssignments(demoData.assignments)
+        reportLoadError('Assignments', assignmentError)
+        setAssignments([])
       } else {
         setAssignments(
           assignmentData || []
@@ -592,12 +607,8 @@ function App() {
         .eq('student_id', user.id)
 
       if (attendanceError) {
-        console.error(
-          'Attendance error:',
-          attendanceError
-        )
-        const demoData = getDemoDashboardData(user)
-        setAttendance(demoData.attendance)
+        reportLoadError('Attendance', attendanceError)
+        setAttendance([])
       } else {
         setAttendance(
           withAttendancePercentages(attendanceData || [])
@@ -648,12 +659,8 @@ function App() {
         })
 
       if (resultError) {
-        console.error(
-          'Results error:',
-          resultError
-        )
-        const demoData = getDemoDashboardData(user)
-        setResults(demoData.results)
+        reportLoadError('Results', resultError)
+        setResults([])
       } else {
         setResults(resultData || [])
       }
@@ -685,12 +692,8 @@ function App() {
         })
 
       if (timetableError) {
-        console.error(
-          'Timetable error:',
-          timetableError
-        )
-        const demoData = getDemoDashboardData(user)
-        setTimetable(demoData.timetable)
+        reportLoadError('Timetable', timetableError)
+        setTimetable([])
       } else {
         setTimetable(
           timetableData || []
@@ -770,6 +773,29 @@ function App() {
               email: profile.email || '',
               full_name: profile.full_name || '',
             })))
+          try {
+            const { teachers: accountStatuses } = await invokeTeacherAccountAdmin({ action: 'list' })
+            const statusesById = new Map(
+              (accountStatuses || [])
+                .filter((teacher) => teacher && isUuid(teacher.id))
+                .map((teacher) => [teacher.id, teacher]),
+            )
+            setTeachers((profiles || [])
+              .filter((teacher) =>
+                teacher &&
+                String(teacher.role || '').toLowerCase() === 'teacher' &&
+                isUuid(teacher.id),
+              )
+              .map((teacher) => ({
+                ...teacher,
+                ...(statusesById.get(teacher.id) || {}),
+                id: teacher.id,
+                email: teacher.email || '',
+                full_name: teacher.full_name || '',
+              })))
+          } catch (error) {
+            reportLoadError('Teacher account status', error)
+          }
         }
 
         const { data: teacherSubjectData, error: teacherSubjectsError } = await supabase
@@ -927,11 +953,13 @@ function App() {
       semester: null,
       department: null,
       university: null,
+      teacher_id: teacherId,
+      course_ids: courseIds,
     })
     if (data?.success === false) {
       throw new Error(data.message || 'The server could not create the teacher account.')
     }
-    const profile = data?.profile
+    const profile = data?.profile || data?.teacher
     const returnedTeacherId = data?.user?.id || profile?.id
     if (!profile || !returnedTeacherId || profile.id && profile.id !== returnedTeacherId) {
       throw new Error('The server response did not include a matching teacher profile and Auth UUID.')
@@ -944,7 +972,7 @@ function App() {
     const teacher = {
       ...profile,
       id: teacherUuid,
-      email: data.user?.email || profile.email || email,
+      email: data?.user?.email || profile.email || email,
       full_name: profile.full_name || fullName,
       teacher_id: profile.teacher_id || String(input.teacherId || '').trim(),
       role: profile.role,
@@ -1462,6 +1490,10 @@ function App() {
   // LOADING
   // =========================
 
+  if (isAboutPage && !user) {
+    return <AboutDeveloper />
+  }
+
   if (loading) {
     return (
       <div className="app-loading">
@@ -1479,11 +1511,23 @@ function App() {
   // =========================
 
   if (!user) {
-    return <Auth onLogin={handleUserLogin} />
+    return (
+      <div className="auth-page-shell">
+        <Auth onLogin={handleUserLogin} />
+        <footer className="developer-footer">
+          <span>Developed by Suraj Yadav</span>
+          <a href="#/about-developer">About the developer</a>
+        </footer>
+      </div>
+    )
   }
 
   if (user.app_metadata?.force_password_change) {
     return <ForcedPasswordChange onSubmit={completeForcedPasswordChange} />
+  }
+
+  if (isAboutPage) {
+    return <AboutDeveloper />
   }
 
   // =========================
@@ -1532,6 +1576,9 @@ function App() {
   // =========================
 
   function renderPage() {
+    if (userRole === 'teacher' && active === 'timetable') {
+      return <Timetable timetable={timetable} studentSemester={studentSemester} />
+    }
     if (userRole === 'teacher' && active !== 'profile') {
       return (
         <Suspense fallback={<div className="app-loading"><div className="loading-spinner" /><p>Loading teacher workspace...</p></div>}>
@@ -1686,7 +1733,7 @@ function App() {
     <div className="student-app">
 
       <Sidebar
-        active={userRole === 'teacher' && active !== 'profile' ? 'teacher-workspace' : active}
+        active={userRole === 'teacher' && !['profile', 'timetable'].includes(active) ? 'teacher-workspace' : active}
         setActive={setActive}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -1711,6 +1758,10 @@ function App() {
           {loadError && <div className="app-data-error" role="alert">{loadError}</div>}
           {renderPage()}
         </main>
+        <footer className="developer-footer">
+          <span>Developed by Suraj Yadav</span>
+          <a href="#/about-developer">About the developer</a>
+        </footer>
 
       </div>
 

@@ -1,16 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
 /* =========================
    GLOBAL RESET
 ========================= */
-
-:root {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #172033;
-  background: #f5f7fb;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-}
 
 * {
   box-sizing: border-box;
@@ -25,21 +15,20 @@ html {
 html,
 body,
 #root {
-  min-height: 100%;
   width: 100%;
+  min-height: 100%;
 }
 
 body {
+  margin: 0;
   font-family:
     Inter,
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-
   background: #f5f7fb;
   color: #172033;
-  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -51,7 +40,16 @@ select {
 }
 
 button {
-  cursor: pointer;
+  border: 0;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(99, 102, 241, 0.55);
+  outline-offset: 2px;
 }
 
 a {
@@ -60,32 +58,52 @@ a {
 }
 
 /* =========================
-   MAIN APPLICATION
+   APP
 ========================= */
 
 .student-app {
-  min-height: 100vh;
   width: 100%;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 255px minmax(0, 1fr);
+  align-items: stretch;
   background: #f5f7fb;
 }
 
-.app-data-error {
-  margin: 0 0 18px;
-  padding: 12px 16px;
-  border: 1px solid #fecdca;
-  border-radius: 10px;
-  background: #fef3f2;
-  color: #b42318;
-  font-size: 14px;
+.auth-page-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-  outline: 3px solid rgba(79, 70, 229, 0.35);
-  outline-offset: 2px;
+.developer-footer {
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  color: #667085;
+  background: #fff;
+  border-top: 1px solid #e8ebf1;
+  font-size: 12px;
+}
+
+.developer-footer a {
+  color: #4338ca;
+  font-weight: 650;
+}
+
+.developer-footer a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.developer-footer a:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 
 /* =========================
@@ -94,9 +112,12 @@ select:focus-visible {
 
 .main-wrapper {
   min-height: 100vh;
-  margin-left: 255px;
-  width: calc(100% - 255px);
-  transition: width 0.2s ease, margin-left 0.2s ease;
+  min-width: 0;
+  width: auto;
+  margin: 0;
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
 }
 
 /* =========================
@@ -104,19 +125,25 @@ select:focus-visible {
 ========================= */
 
 .main-content {
-  width: min(100%, 1600px);
+  flex: 1;
+  min-width: 0;
+  width: 100%;
   max-width: 1600px;
   margin: 0 auto;
-  padding: clamp(18px, 2.2vw, 40px) clamp(16px, 2vw, 30px) 40px;
+  padding: 28px 30px 40px;
+}
+
+.main-content > * {
+  min-width: 0;
 }
 
 /* =========================
-   LOADING SCREEN
+   LOADING
 ========================= */
 
 .app-loading {
-  min-height: 100vh;
   width: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -135,12 +162,16 @@ select:focus-visible {
   width: 42px;
   height: 42px;
   border: 4px solid #e0e7ff;
-  border-top-color: #4f46e5;
+  border-top: 4px solid #4f46e5;
   border-radius: 50%;
   animation: loadingSpin 0.8s linear infinite;
 }
 
 @keyframes loadingSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
   to {
     transform: rotate(360deg);
   }
@@ -169,7 +200,7 @@ select:focus-visible {
 }
 
 /* =========================
-   SELECTION
+   TEXT SELECTION
 ========================= */
 
 ::selection {
@@ -178,74 +209,11 @@ select:focus-visible {
 }
 
 /* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 1100px) {
-  .main-content {
-    padding: 22px 20px 32px;
-  }
-}
-
-@media (max-width: 768px) {
-  .main-wrapper {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .main-content {
-    padding: 18px 14px 28px;
-  }
-
-  .dashboard-header,
-  .courses-page-header,
-  .attendance-page-header,
-  .assignments-page-header,
-  .results-page-header,
-  .timetable-page-header,
-  .fees-page-header,
-  .profile-page-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .attendance-summary,
-  .results-summary,
-  .fees-summary,
-  .assignments-stats,
-  .dashboard-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 480px) {
-  .main-content {
-    padding: 16px 12px 24px;
-  }
-
-  .attendance-summary,
-  .results-summary,
-  .fees-summary,
-  .assignments-stats,
-  .dashboard-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-card,
-  .attendance-card,
-  .results-card,
-  .fees-card,
-  .assignments-card,
-  .profile-card {
-    padding: 17px;
-  }
-}
-
-/* =========================
    UTILITY
 ========================= */
 
 .no-data {
+  width: 100%;
   padding: 40px 20px;
   text-align: center;
   color: #98a2b3;
@@ -256,304 +224,65 @@ select:focus-visible {
   text-align: center;
 }
 
-.dashboard-header,
-.courses-page-header,
-.attendance-page-header,
-.assignments-page-header,
-.results-page-header,
-.timetable-page-header,
-.fees-page-header,
-.profile-page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 24px;
-}
+/* =========================
+   TABLE RESPONSIVE
+========================= */
 
-.dashboard-header h1,
-.courses-page-header h1,
-.attendance-page-header h1,
-.assignments-page-header h1,
-.results-page-header h1,
-.timetable-page-header h1,
-.fees-page-header h1,
-.profile-page-header h1 {
-  color: #172033;
-  font-size: 26px;
-  font-weight: 750;
-  letter-spacing: -0.5px;
-}
-
-.dashboard-subtitle,
-.courses-page-header p,
-.attendance-page-header p,
-.assignments-page-header p,
-.results-page-header p,
-.timetable-page-header p,
-.fees-page-header p,
-.profile-page-header p {
-  margin-top: 6px;
-  color: #7b8495;
-  font-size: 14px;
-}
-
-.dashboard-stats,
-.attendance-summary,
-.results-summary,
-.fees-summary,
-.assignments-stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.attendance-summary,
-.results-summary,
-.fees-summary,
-.assignments-stats {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.dashboard-stat-card,
-.attendance-summary-card,
-.result-summary-card,
-.fee-summary-card,
-.assignment-stat-card {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 19px;
-  border: 1px solid #e9edf4;
-  border-radius: 14px;
-  background: #fff;
-  box-shadow: 0 3px 12px rgba(16, 24, 40, 0.035);
-}
-
-.dashboard-stat-card span,
-.attendance-summary-card span,
-.result-summary-card span,
-.fee-summary-card span,
-.assignment-stat-card span {
-  display: block;
-  margin-bottom: 5px;
-  color: #7b8495;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.dashboard-stat-card strong,
-.attendance-summary-card strong,
-.result-summary-card strong,
-.fee-summary-card strong,
-.assignment-stat-card strong {
-  display: block;
-  color: #172033;
-  font-size: 21px;
-  font-weight: 700;
-}
-
-.dashboard-stat-icon,
-.attendance-summary-icon,
-.result-summary-icon,
-.fee-summary-icon,
-.assignment-stat-icon {
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  background: #f0edff;
-  color: #5b4be8;
-  font-size: 19px;
-  font-weight: 700;
-}
-
-.green {
-  background: #e8f8ef;
-  color: #159456;
-}
-
-.orange {
-  background: #fff4e5;
-  color: #d97706;
-}
-
-.blue {
-  background: #eaf3ff;
-  color: #2772c7;
-}
-
-.red {
-  background: #fff0ef;
-  color: #d92d20;
-}
-
-.dashboard-card,
-.attendance-card,
-.results-card,
-.fees-card,
-.assignments-card,
-.profile-card {
-  min-width: 0;
-  padding: 22px;
-  border: 1px solid #e9edf4;
-  border-radius: 15px;
-  background: #fff;
-  box-shadow: 0 3px 12px rgba(16, 24, 40, 0.035);
-}
-
-.dashboard-card-header,
-.attendance-card-header,
-.results-card-header,
-.fees-card-header,
-.assignments-card-header,
-.profile-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.dashboard-card-header h2,
-.attendance-card-header h2,
-.results-card-header h2,
-.fees-card-header h2,
-.assignments-card-header h2,
-.profile-card-header h2 {
-  color: #172033;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.dashboard-card-header p,
-.attendance-card-header p,
-.results-card-header p,
-.fees-card-header p,
-.assignments-card-header p,
-.profile-card-header p {
-  margin-top: 5px;
-  color: #8992a3;
-  font-size: 12px;
-}
-
-.dashboard-card-header button {
-  border: 0;
-  background: transparent;
-  color: #4f46e5;
-  font-size: 12px;
-  font-weight: 650;
-}
-
-.dashboard-empty,
-.attendance-empty,
-.assignments-empty,
-.courses-empty {
-  padding: 36px 20px;
-  text-align: center;
-  color: #7b8495;
-}
-
-.dashboard-empty > span,
-.attendance-empty-icon,
-.assignments-empty-icon,
-.courses-empty-icon {
-  display: block;
-  margin-bottom: 10px;
-  font-size: 30px;
-}
-
-.dashboard-progress,
-.course-progress-bar,
-.attendance-progress-bar,
-.fees-progress-bar {
-  height: 8px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #edf0f6;
-}
-
-.dashboard-progress span,
-.course-progress-bar span,
-.attendance-progress-bar span,
-.fees-progress-bar span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #4f46e5, #8b5cf6);
-}
-
-.attendance-table,
-.results-table {
+.table-wrapper {
   width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.attendance-table th,
-.results-table th {
-  padding: 12px 14px;
-  background: #f8f9fc;
-  color: #667085;
-  font-size: 11px;
-  font-weight: 650;
-  white-space: nowrap;
-}
-
-.attendance-table td,
-.results-table td {
-  padding: 14px;
-  border-bottom: 1px solid #eef0f4;
-  color: #586174;
-  font-size: 12px;
-}
-
-.attendance-table td strong,
-.results-table td strong {
-  color: #263147;
-}
-
-.attendance-table-wrapper,
-.results-table-wrapper {
   overflow-x: auto;
 }
 
-.attendance-status,
-.result-status,
-.result-grade,
-.assignment-priority {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 5px 9px;
-  font-size: 11px;
-  font-weight: 650;
-  white-space: nowrap;
-}
-
-.attendance-status.good,
-.result-status.pass {
-  background: #e8f8ef;
-  color: #16834c;
-}
-
-.attendance-status.low,
-.result-status.fail {
-  background: #fff0ef;
-  color: #c43228;
-}
-
-.result-grade {
-  background: #f0edff;
-  color: #5b4be8;
-}
+/* =========================
+   TABLET
+========================= */
 
 @media (max-width: 900px) {
-  .dashboard-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .student-app {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+
+  .main-wrapper {
+    grid-column: 2;
+  }
+
+  .main-content {
+    padding: 24px 22px 35px;
+  }
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 768px) {
+  .student-app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .main-wrapper {
+    grid-column: 1;
+    width: 100%;
+  }
+
+  .main-content {
+    width: 100%;
+    padding: 20px 15px 30px;
+  }
+}
+
+/* =========================
+   SMALL MOBILE
+========================= */
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 17px 12px 25px;
+  }
+
+  .developer-footer {
+    flex-wrap: wrap;
+    gap: 5px;
+    font-size: 11px;
   }
 }

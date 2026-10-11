@@ -1,106 +1,58 @@
 import './Assignments.css'
-import { useState } from 'react'
 
-const PAGE_LOAD_TIME = new Date()
+export default function Assignments({ assignments = [] }) {
+  function formatDate(date) {
+    if (!date) return 'No due date'
 
-export default function AssignmentsPage({ assignments = [] }) {
-  const [selectedAssignment, setSelectedAssignment] = useState(null)
+    return new Date(date).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
+  }
+
+  function getDaysLeft(date) {
+    if (!date) return null
+
+    const now = new Date()
+    const dueDate = new Date(date)
+
+    const difference = dueDate - now
+    return Math.ceil(difference / (1000 * 60 * 60 * 24))
+  }
 
   return (
-    <div className="assignments-page">
+    <section className="assignments-page">
 
+      {/* Header */}
       <div className="assignments-page-header">
         <div>
           <h1>Assignments</h1>
           <p>
-            Manage your assignments and keep track of
-            upcoming deadlines.
+            View and track your upcoming assignments.
           </p>
         </div>
 
-        <div className="assignment-header-count">
-          <strong>{assignments.length}</strong>
+        <div className="assignments-count">
           <span>Total Assignments</span>
+          <strong>{assignments.length}</strong>
         </div>
       </div>
 
-      <div className="assignments-stats">
-
-        <div className="assignment-stat-card">
-          <div className="assignment-stat-icon purple">
-            📝
-          </div>
-
-          <div>
-            <span>Total Assignments</span>
-            <strong>{assignments.length}</strong>
-          </div>
-        </div>
-
-        <div className="assignment-stat-card">
-          <div className="assignment-stat-icon orange">
-            ⏳
-          </div>
-
-          <div>
-            <span>Upcoming</span>
-            <strong>
-              {
-                assignments.filter((item) => {
-                  if (!item.due_date) return false
-
-                  const date = new Date(item.due_date)
-
-                  return (
-                    !Number.isNaN(date.getTime()) &&
-                    date >= PAGE_LOAD_TIME
-                  )
-                }).length
-              }
-            </strong>
-          </div>
-        </div>
-
-        <div className="assignment-stat-card">
-          <div className="assignment-stat-icon red">
-            !
-          </div>
-
-          <div>
-            <span>High Priority</span>
-            <strong>
-              {
-                assignments.filter(
-                  (item) =>
-                    String(
-                      item.priority || ''
-                    ).toLowerCase() === 'high'
-                ).length
-              }
-            </strong>
-          </div>
-        </div>
-
-      </div>
-
+      {/* Assignment List */}
       <section className="assignments-card">
 
         <div className="assignments-card-header">
           <div>
-            <h2>All Assignments</h2>
+            <h2>Upcoming Assignments</h2>
             <p>
-              Your current assignment schedule.
+              Stay updated with your academic tasks.
             </p>
           </div>
-
-          <span className="assignment-list-count">
-            {assignments.length} Items
-          </span>
         </div>
 
         {assignments.length === 0 ? (
           <div className="assignments-empty">
-
             <div className="assignments-empty-icon">
               📝
             </div>
@@ -111,67 +63,50 @@ export default function AssignmentsPage({ assignments = [] }) {
               Your assignments will appear here once
               they are added by your faculty.
             </p>
-
           </div>
         ) : (
-          <div className="assignment-full-list">
+          <div className="assignments-list">
 
             {assignments.map((assignment) => {
+              const daysLeft = getDaysLeft(
+                assignment.due_date
+              )
 
               const priority =
-                String(
-                  assignment.priority || 'Medium'
-                ).toLowerCase()
+                assignment.priority || 'Medium'
 
-              const dueDate = assignment.due_date
-                ? new Date(assignment.due_date)
-                : null
-
-              const formattedDate =
-                dueDate &&
-                !Number.isNaN(dueDate.getTime())
-                  ? dueDate.toLocaleDateString(
-                      'en-IN',
-                      {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      }
-                    )
-                  : 'No date'
+              const priorityClass =
+                priority.toLowerCase()
 
               return (
                 <div
-                  className="assignment-full-item"
+                  className="assignment-item"
                   key={assignment.id}
                 >
 
-                  <div className="assignment-main-icon">
+                  <div className="assignment-icon">
                     📝
                   </div>
 
-                  <div className="assignment-main-info">
+                  <div className="assignment-content">
 
-                    <div className="assignment-title-row">
+                    <div className="assignment-top">
+                      <div>
+                        <span className="assignment-code">
+                          {assignment.courses?.code ||
+                            'Course'}
+                        </span>
 
-                      <h3>
-                        {assignment.title ||
-                          'Untitled Assignment'}
-                      </h3>
+                        <h3>
+                          {assignment.title}
+                        </h3>
+                      </div>
 
                       <span
-                        className={`assignment-priority ${
-                          priority === 'high'
-                            ? 'high'
-                            : priority === 'low'
-                            ? 'low'
-                            : 'medium'
-                        }`}
+                        className={`assignment-priority ${priorityClass}`}
                       >
-                        {assignment.priority ||
-                          'Medium'}
+                        {priority}
                       </span>
-
                     </div>
 
                     <p className="assignment-description">
@@ -179,59 +114,42 @@ export default function AssignmentsPage({ assignments = [] }) {
                         'No description available.'}
                     </p>
 
-                    <div className="assignment-course">
-
-                      <span className="assignment-course-icon">
-                        📚
-                      </span>
+                    <div className="assignment-footer">
 
                       <span>
+                        📚{' '}
                         {assignment.courses?.name ||
                           'Course'}
                       </span>
 
-                      {assignment.courses?.code && (
-                        <b>
-                          {assignment.courses.code}
-                        </b>
+                      <span>
+                        📅{' '}
+                        {formatDate(
+                          assignment.due_date
+                        )}
+                      </span>
+
+                      {daysLeft !== null && (
+                        <span
+                          className={
+                            daysLeft < 0
+                              ? 'assignment-overdue'
+                              : daysLeft <= 3
+                              ? 'assignment-soon'
+                              : ''
+                          }
+                        >
+                          {daysLeft < 0
+                            ? 'Overdue'
+                            : daysLeft === 0
+                            ? 'Due Today'
+                            : `${daysLeft} days left`}
+                        </span>
                       )}
 
                     </div>
 
                   </div>
-
-                  <div className="assignment-deadline">
-
-                    <span>Due Date</span>
-
-                    <strong>
-                      {formattedDate}
-                    </strong>
-
-                    {dueDate &&
-                    !Number.isNaN(
-                      dueDate.getTime()
-                    ) ? (
-                      <small>
-                        {dueDate < PAGE_LOAD_TIME
-                          ? 'Overdue'
-                          : 'Upcoming'}
-                      </small>
-                    ) : (
-                      <small>
-                        No deadline
-                      </small>
-                    )}
-
-                  </div>
-
-                  <button
-                    className="assignment-view-btn"
-                    type="button"
-                    onClick={() => setSelectedAssignment(assignment)}
-                  >
-                    View
-                  </button>
 
                 </div>
               )
@@ -241,68 +159,6 @@ export default function AssignmentsPage({ assignments = [] }) {
         )}
 
       </section>
-
-      <div className="assignment-tips">
-
-        <div className="assignment-tip">
-          <div className="tip-icon">
-            💡
-          </div>
-
-          <div>
-            <strong>Stay Organized</strong>
-
-            <p>
-              Keep track of your deadlines and submit
-              assignments on time.
-            </p>
-          </div>
-        </div>
-
-        <div className="assignment-tip">
-          <div className="tip-icon">
-            ⏰
-          </div>
-
-          <div>
-            <strong>Plan Ahead</strong>
-
-            <p>
-              Start high-priority assignments early to
-              avoid last-minute pressure.
-            </p>
-          </div>
-        </div>
-
-      </div>
-
-      {selectedAssignment && (
-        <div className="assignment-dialog-backdrop" onClick={() => setSelectedAssignment(null)}>
-          <section
-            className="assignment-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="assignment-dialog-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="assignment-dialog-header">
-              <div>
-                <span>{selectedAssignment.courses?.code || 'Assignment'}</span>
-                <h2 id="assignment-dialog-title">{selectedAssignment.title || 'Untitled Assignment'}</h2>
-              </div>
-              <button type="button" aria-label="Close assignment details" onClick={() => setSelectedAssignment(null)}>×</button>
-            </div>
-            <p>{selectedAssignment.description || 'No description available.'}</p>
-            <dl>
-              <div><dt>Course</dt><dd>{selectedAssignment.courses?.name || 'Not assigned'}</dd></div>
-              <div><dt>Due date</dt><dd>{selectedAssignment.due_date ? new Date(selectedAssignment.due_date).toLocaleDateString('en-IN') : 'No deadline'}</dd></div>
-              <div><dt>Priority</dt><dd>{selectedAssignment.priority || 'Medium'}</dd></div>
-            </dl>
-            <p className="assignment-dialog-note">Submission is not enabled until your institution connects an assignment submission service.</p>
-          </section>
-        </div>
-      )}
-
-    </div>
+    </section>
   )
 }
