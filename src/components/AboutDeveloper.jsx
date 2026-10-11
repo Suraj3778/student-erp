@@ -4,7 +4,8 @@ const developer = {
   name: 'Suraj Yadav',
   location: 'Prayagraj, Uttar Pradesh, India',
   email: 'officialsuraj7607@gmail.com',
-}
+  portfolio: 'https://suportfolio2026.netlify.app/',
+};
 
 const socialProfiles = [
   {
@@ -15,7 +16,11 @@ const socialProfiles = [
     name: 'LinkedIn',
     url: 'https://in.linkedin.com/in/suraj-yadav-67b2a0299',
   },
-]
+  {
+    name: 'Portfolio Website',
+    url: 'https://suportfolio2026.netlify.app/',
+  },
+];
 
 const technologies = ['React', 'Vite', 'Supabase']
 
